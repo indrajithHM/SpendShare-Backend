@@ -11,15 +11,30 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://spendshare-app-default-rtdb.asia-southeast1.firebasedatabase.app"
 });
 
 /* ========= SEND NOTIFICATION ========= */
 app.post("/send-notification", async (req, res) => {
   try {
-    const { tokens, title, body } = req.body;
+    const { participantIds, title, body } = req.body;
 
-    if (!tokens || tokens.length === 0) {
-      return res.status(400).json({ error: "No tokens provided" });
+    if (!participantIds || participantIds.length === 0) {
+      return res.status(400).json({ error: "No participants provided" });
+    }
+
+    const db = admin.database();
+    const tokens = [];
+
+    for (const uid of participantIds) {
+      const snap = await db.ref(`users/${uid}/fcmToken`).get();
+      if (snap.exists()) {
+        tokens.push(snap.val());
+      }
+    }
+
+    if (tokens.length === 0) {
+      return res.json({ success: true, sent: 0 });
     }
 
     const response = await admin.messaging().sendEachForMulticast({
