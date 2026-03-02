@@ -17,7 +17,7 @@ admin.initializeApp({
 /* ========= SEND NOTIFICATION ========= */
 app.post("/send-notification", async (req, res) => {
   try {
-    const { participantIds, title, body } = req.body;
+    const { participantIds, title, body, splitId } = req.body;
 
     if (!participantIds || participantIds.length === 0) {
       return res.status(400).json({ error: "No participants provided" });
@@ -38,14 +38,25 @@ app.post("/send-notification", async (req, res) => {
     }
 
     const response = await admin.messaging().sendEachForMulticast({
-      notification: { title, body },
-      tokens,
+      notification: {
+        title,
+        body
+      },
+      webpush: {
+        notification: {
+          icon: "https://spendshare-app.web.app/logo192.png",
+          data: {
+            url: `https://spendshare-app.web.app/split/${splitId}`
+          }
+        }
+      },
+      tokens
     });
 
     res.json({
       success: true,
       sent: response.successCount,
-      failed: response.failureCount,
+      failed: response.failureCount
     });
 
   } catch (err) {
