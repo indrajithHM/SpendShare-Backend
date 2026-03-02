@@ -44,7 +44,7 @@ app.post("/send-notification", async (req, res) => {
       },
       webpush: {
         notification: {
-          icon: "https://spendshare-app.web.app/logo192.png",
+          icon: "https://spendshare-app.web.app/SpendShare.png",
           data: {
             url: `https://spendshare-app.web.app/split/${splitId}`
           }
